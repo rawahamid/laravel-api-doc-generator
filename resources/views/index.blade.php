@@ -98,7 +98,7 @@
             </div>
         </nav>
       <div id="app" v-cloak class="w-full flex lg:pt-10">
-         <aside class="text-xl text-grey-darkest break-all bg-gray-200 pl-2 h-screen sticky top-1 overflow-auto" style="width: 35%">
+         <aside class="text-xl text-grey-darkest break-all bg-gray-200 pl-2 h-screen sticky top-1 overflow-auto" style="width: 25%">
             <h1 class="font-light mx-3">Routes List</h1>
              <div class="dropdown">
                  <input
@@ -129,8 +129,8 @@
                     @foreach ($docs as $index => $doc)
                     <tr>
                         <td>
-                            @if ($previousController['controller'] !== $doc['controller'])
-                                <h3 class="mt-2 font-thin">{{ str_replace('Controller', '', $doc['controller']) }}</h3>
+                            @if ($previousController['controller'] !== $doc['controller'] && config('request-docs.sort_by') === 'route_names')
+                                <h2 class="mt-2">{{ str_replace('Controller', '', $doc['controller']) }}</h2>
                             @endif
                             <a href="#{{$doc['methods'][0] .'-'. $doc['uri']}}" @click="highlightSidebar({{$index}})">
                                 <span class="
@@ -138,7 +138,7 @@
                                     inline-flex
                                     items-center
                                     justify-center
-                                    w-20
+                                    w-16
                                     px-2
                                     py-1
                                     text-xs
@@ -200,26 +200,45 @@
                 </div>
                 <hr class="border-b border-grey-light">
 
-                <table class="table-fixed text-sm mt-5 shadow-inner">
-                    <thead class="border">
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="align-left border border-gray-300 pl-2 pr-2 bg-gray-200 font-bold">Controller</td>
-                            <td class="align-left border pl-2 pr-2 break-all">{{$doc['controller_full_path']}}</td>
-                        </tr>
-                        <tr>
-                            <td class="align-left border border-gray-300 pl-2 pr-2 bg-gray-200 font-bold">Method</td>
-                            <td class="align-left border pl-2 pr-2 break-all">{{"@" .$doc['method']}}</td>
-                        </tr>
-                        @foreach ($doc['middlewares'] as $middleware)
-                            <tr>
-                                <td class="align-left border border-gray-300 pl-2 pr-2 bg-gray-200">Middleware</td>
-                                <td class="align-left border pl-2 pr-2 break-all">{{$middleware}}</td>
+                <div class="flex space-x-4">
+                    <div class="flex-1">
+                        <table class="w-full table-auto">
+                            <h2 class="m-2 font-bold">Route Information</h2>
+                            <tbody class="text-black-600 text-sm font-medium">
+                            <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                <td class="text-right py-1 px-6 text-left font-bold border">Controller</td>
+                                <td class="text-left py-1 px-6 text-left border">{{$doc['controller']}}</td>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                            <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                <td class="text-right py-1 px-6 text-left font-bold border">Method</td>
+                                <td class="text-left py-1 px-6 text-left border">{{"@" .$doc['method']}}</td>
+                            </tr>
+                            @foreach ($doc['middlewares'] as $middleware)
+                                <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                    <td class="text-right py-1 px-6 text-left border">Middleware</td>
+                                    <td class="text-left py-1 px-6 text-left border">{{$middleware}}</td>
+                                </tr>
+                            @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="flex-1">
+                        <h2 class="m-2 font-bold">Responses</h2>
+                        <table class="w-full table-auto">
+                            <tbody class="text-black-600 text-sm font-medium">
+                            @forelse($doc['responses'] as $code => $tag)
+                                <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                    <td class="text-right py-1 px-6 text-left font-bold border">{{ $code }}</td>
+                                    <td class="text-left py-1 px-6 text-left border">{{$tag}}</td>
+                                </tr>
+                            @empty
+                                <h4>There is no response codes to show</h4>
+                            @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
                 <div v-if="docs[{{$index}}]['docBlock']" class="border-2 mr-4 mt-4 p-4 rounded shadow-inner text-sm">
                     <vue-markdown>{!! $doc['docBlock'] !!}</vue-markdown>
                 </div>

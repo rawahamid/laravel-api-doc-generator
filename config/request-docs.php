@@ -1,12 +1,9 @@
 <?php
 
 return [
-    /**
-     * Documentation Name
-     */
     'document_name'  => 'LRD',
 
-    /**
+    /*
     * Route where request docs will be served from
     * localhost:8080/request-docs
     */
@@ -25,10 +22,7 @@ return [
      */
     'sort_by' => 'default',
 
-    /**
-     * Generate api documentation for routes that match
-     */
-    'matching_routes' => [
-        "#^api#"
+    'matching_paths' => [
+        "#^api#",
     ]
 ];

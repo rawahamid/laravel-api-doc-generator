@@ -3,18 +3,18 @@
 namespace Rakutentech\LaravelRequestDocs;
 
 use Route;
-use ReflectionMethod;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 use Exception;
+use ReflectionMethod;
+use phpDocumentor\Reflection\DocBlockFactory;
 
 class LaravelRequestDocs
 {
 
     public function getDocs()
     {
-        $docs = [];
         $controllersInfo = $this->getControllersInfo();
         $controllersInfo = $this->appendRequestRules($controllersInfo);
         return array_filter($controllersInfo);
@@ -61,10 +61,26 @@ class LaravelRequestDocs
         $routes = collect(Route::getRoutes());
         foreach ($routes as $route) {
             try {
-                /// Show Pnly Controller Name
+                /// Show Only Controller Name
                 $controllerFullPath = explode('@', $route->action['controller'])[0];
                 $getStartWord = strrpos(explode('@', $route->action['controller'])[0], '\\') + 1;
                 $controllerName = substr($controllerFullPath, $getStartWord);
+                $methodName = explode('@', $route->action['controller'])[1];
+
+                $tags = [];
+                $controllerClass = new ReflectionMethod($controllerFullPath, $methodName);
+                $factory = DocBlockFactory::createInstance();
+                if ($controllerClass->getDocComment()) {
+                    $docblock = $factory->create($controllerClass->getDocComment());
+                    $docTags = $docblock->getTags();
+                    foreach ($docTags as $docTag) {
+                        if (str_contains($docTag->getName(), 'response')) {
+                            $docCode = str_replace('response', '', $docTag->getName());
+                            $tags[$docCode] = $docTag->getDescription()->getBodyTemplate();
+
+                        }
+                    }
+                }
 
                 /// Has Auth Token
                 $hasAuthToken = !is_array($route->action['middleware']) ? [$route->action['middleware']] : $route->action['middleware'];
@@ -75,18 +91,18 @@ class LaravelRequestDocs
                     'middlewares'           => !is_array($route->action['middleware']) ? [$route->action['middleware']] : $route->action['middleware'],
                     'controller'            => $controllerName,
                     'controller_full_path'  => $controllerFullPath,
-                    'method'                => explode('@', $route->action['controller'])[1],
+                    'method'                => $methodName,
                     'rules'                 => [],
                     'docBlock'              => "",
-                    'bearer'                => in_array('auth:api', $hasAuthToken)
+                    'bearer'                => in_array('auth:api', $hasAuthToken),
+                    'responses'             => $tags
                 ];
             } catch (Exception $e) {
                 continue;
             }
         }
-
-        $excludePatterns = config('request-docs.matching_routes') ?? [];
-        $matchingControllers = [];
+        $docs = [];
+        $excludePatterns = config('request-docs.matching_paths') ?? [];
         foreach ($controllersInfo as $controllerInfo) {
             try {
                 $exclude = false;
@@ -97,13 +113,13 @@ class LaravelRequestDocs
                     }
                 }
                 if (!$exclude) {
-                    $matchingControllers[] = $controllerInfo;
+                    $docs[] = $controllerInfo;
                 }
             } catch (Exception $exception) {
                 continue;
             }
         }
-        return $matchingControllers;
+        return $docs;
     }
 
     public function appendRequestRules(Array $controllersInfo)
