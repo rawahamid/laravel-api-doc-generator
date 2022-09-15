@@ -1,16 +1,16 @@
 <?php
 
-namespace Rakutentech\LaravelRequestDocs;
+namespace Targettech\LaravelRequestDocs;
 
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @see \Rakutentech\LaravelRequestDocs\LaravelRequestDocs
+ * @see \Targettech\LaravelRequestDocs\LaravelRequestDocs
  */
 class LaravelRequestDocsFacade extends Facade
 {
-    protected static function getFacadeAccessor()
+    protected static function getFacadeAccessor(): string
     {
-        return 'laravel-request-docs';
+        return 'laravel-api-doc-generator';
     }
 }

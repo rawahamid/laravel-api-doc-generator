@@ -1,14 +1,11 @@
 <?php
 
-namespace Rakutentech\LaravelRequestDocs;
+namespace Targettech\LaravelRequestDocs;
 
-use Illuminate\Auth\Middleware\Authenticate as Middleware;
-use Illuminate\Http\Response;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Resources\Json\JsonResource;
 use Closure;
-
+use Illuminate\Auth\Middleware\Authenticate as Middleware;
 use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\DB;
 
 class LaravelRequestDocsMiddleware extends Middleware
@@ -17,7 +14,7 @@ class LaravelRequestDocsMiddleware extends Middleware
 
     public function handle($request, Closure $next, ...$guards)
     {
-        if (!$request->headers->has('X-Request-LRD') || !config('app.debug')) {
+        if (! $request->headers->has('X-Request-LRD') || ! config('app.debug')) {
             return $next($request);
         }
 
@@ -26,12 +23,10 @@ class LaravelRequestDocsMiddleware extends Middleware
 
         $content = json_decode($response->content(), true);
         $content['_lrd'] = [
-            'queries' => $this->queries
+            'queries' => $this->queries,
         ];
 
-        $json = new JsonResource($content);
-
-        return $json;
+        return new JsonResource($content);
     }
 
     public function listenDB()
@@ -52,7 +47,7 @@ class LaravelRequestDocsMiddleware extends Middleware
             // and substitute placeholders by suitable values.
             $regex = is_numeric($key)
                 ? "/(?<!\?)\?(?=(?:[^'\\\']*'[^'\\']*')*[^'\\\']*$)(?!\?)/"
-                : "/:{$key}(?=(?:[^'\\\']*'[^'\\\']*')*[^'\\\']*$)/";
+                : "/:$key(?=(?:[^'\\\']*'[^'\\\']*')*[^'\\\']*$)/";
 
             // Mimic bindValue and only string data types
             if (is_string($binding)) {

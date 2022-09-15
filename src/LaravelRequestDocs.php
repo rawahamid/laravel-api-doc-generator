@@ -1,61 +1,64 @@
 <?php
 
-namespace Rakutentech\LaravelRequestDocs;
+namespace Targettech\LaravelRequestDocs;
 
-use Route;
-use Illuminate\Http\Request;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Str;
 use Exception;
-use ReflectionMethod;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 use phpDocumentor\Reflection\DocBlockFactory;
+use ReflectionException;
+use ReflectionMethod;
+use Throwable;
 
 class LaravelRequestDocs
 {
-
-    public function getDocs()
+    public function getDocs(): array
     {
         $controllersInfo = $this->getControllersInfo();
         $controllersInfo = $this->appendRequestRules($controllersInfo);
+
         return array_filter($controllersInfo);
     }
 
-    public function sortDocs(array $docs, $sortBy = 'default'): Array
+    public function sortDocs(array $docs, $sortBy = 'default'): array
     {
         if ($sortBy === 'route_names') {
             sort($docs);
+
             return $docs;
         }
         $sorted = [];
-        foreach ($docs as $key => $doc) {
+        foreach ($docs as $doc) {
             if (in_array('GET', $doc['methods'])) {
                 $sorted[] = $doc;
             }
         }
-        foreach ($docs as $key => $doc) {
+        foreach ($docs as $doc) {
             if (in_array('POST', $doc['methods'])) {
                 $sorted[] = $doc;
             }
         }
-        foreach ($docs as $key => $doc) {
+        foreach ($docs as $doc) {
             if (in_array('PUT', $doc['methods'])) {
                 $sorted[] = $doc;
             }
         }
-        foreach ($docs as $key => $doc) {
+        foreach ($docs as $doc) {
             if (in_array('PATCH', $doc['methods'])) {
                 $sorted[] = $doc;
             }
         }
-        foreach ($docs as $key => $doc) {
+        foreach ($docs as $doc) {
             if (in_array('DELETE', $doc['methods'])) {
                 $sorted[] = $doc;
             }
         }
+
         return $sorted;
     }
 
-    public function getControllersInfo(): Array
+    public function getControllersInfo(): array
     {
         $controllersInfo = [];
         $routes = collect(Route::getRoutes());
@@ -77,27 +80,26 @@ class LaravelRequestDocs
                         if (str_contains($docTag->getName(), 'response')) {
                             $docCode = str_replace('response', '', $docTag->getName());
                             $tags[$docCode] = $docTag->getDescription()->getBodyTemplate();
-
                         }
                     }
                 }
 
                 /// Has Auth Token
-                $hasAuthToken = !is_array($route->action['middleware']) ? [$route->action['middleware']] : $route->action['middleware'];
+                $hasAuthToken = ! is_array($route->action['middleware']) ? [$route->action['middleware']] : $route->action['middleware'];
 
                 $controllersInfo[] = [
-                    'uri'                   => $route->uri,
-                    'methods'               => $route->methods,
-                    'middlewares'           => !is_array($route->action['middleware']) ? [$route->action['middleware']] : $route->action['middleware'],
-                    'controller'            => $controllerName,
-                    'controller_full_path'  => $controllerFullPath,
-                    'method'                => $methodName,
-                    'rules'                 => [],
-                    'docBlock'              => "",
-                    'bearer'                => in_array('auth:api', $hasAuthToken),
-                    'responses'             => $tags
+                    'uri' => $route->uri,
+                    'methods' => $route->methods,
+                    'middlewares' => ! is_array($route->action['middleware']) ? [$route->action['middleware']] : $route->action['middleware'],
+                    'controller' => $controllerName,
+                    'controller_full_path' => $controllerFullPath,
+                    'method' => $methodName,
+                    'rules' => [],
+                    'docBlock' => '',
+                    'bearer' => in_array('auth:api', $hasAuthToken),
+                    'responses' => $tags,
                 ];
-            } catch (Exception $e) {
+            } catch (Exception $ex) {
                 continue;
             }
         }
@@ -108,37 +110,41 @@ class LaravelRequestDocs
                 $exclude = false;
                 foreach ($excludePatterns as $regex) {
                     $uri = $controllerInfo['uri'];
-                    if (!preg_match($regex, $uri)) {
+                    if (! preg_match($regex, $uri)) {
                         $exclude = true;
                     }
                 }
-                if (!$exclude) {
+                if (! $exclude) {
                     $docs[] = $controllerInfo;
                 }
             } catch (Exception $exception) {
                 continue;
             }
         }
+
         return $docs;
     }
 
-    public function appendRequestRules(Array $controllersInfo)
+    /**
+     * @throws ReflectionException
+     */
+    public function appendRequestRules(array $controllersInfo): array
     {
         foreach ($controllersInfo as $index => $controllerInfo) {
-            $controller       = $controllerInfo['controller_full_path'];
-            $method           = $controllerInfo['method'];
+            $controller = $controllerInfo['controller_full_path'];
+            $method = $controllerInfo['method'];
             $reflectionMethod = new ReflectionMethod($controller, $method);
-            $params           = $reflectionMethod->getParameters();
+            $params = $reflectionMethod->getParameters();
 
             foreach ($params as $param) {
-                if (!$param->getType()) {
+                if (! $param->getType()) {
                     continue;
                 }
                 $requestClassName = $param->getType()->getName();
                 $requestClass = null;
                 try {
                     $requestClass = new $requestClassName();
-                } catch (\Throwable $th) {
+                } catch (Throwable $th) {
                     //throw $th;
                 }
                 if ($requestClass instanceof FormRequest) {
@@ -147,12 +153,13 @@ class LaravelRequestDocs
                 }
             }
         }
+
         return $controllersInfo;
     }
 
     public function lrdDocComment($docComment): string
     {
-        $lrdComment = "";
+        $lrdComment = '';
         $counter = 0;
         foreach (explode("\n", $docComment) as $comment) {
             $comment = trim($comment);
@@ -160,40 +167,41 @@ class LaravelRequestDocs
             if (Str::contains($comment, '@lrd')) {
                 $counter++;
             }
-            if ($counter == 1 && !Str::contains($comment, '@lrd')) {
+            if ($counter == 1 && ! Str::contains($comment, '@lrd')) {
                 if (Str::startsWith($comment, '*')) {
                     $comment = trim(substr($comment, 1));
                 }
                 // remove first character from string
-                $lrdComment .= $comment . "\n";
+                $lrdComment .= $comment."\n";
             }
         }
+
         return $lrdComment;
     }
 
     // get text between first and last tag
-    private function getTextBetweenTags($docComment, $tag1, $tag2)
+    private function getTextBetweenTags($docComment, $tag1, $tag2): string
     {
         $docComment = trim($docComment);
         $start = strpos($docComment, $tag1);
         $end = strpos($docComment, $tag2);
-        $text = substr($docComment, $start + strlen($tag1), $end - $start - strlen($tag1));
-        return $text;
+
+        return substr($docComment, $start + strlen($tag1), $end - $start - strlen($tag1));
     }
 
-    public function flattenRules($mixedRules)
+    public function flattenRules($mixedRules): array
     {
         $rules = [];
         foreach ($mixedRules as $attribute => $rule) {
             if (is_object($rule)) {
                 $rule = get_class($rule);
                 $rules[$attribute][] = $rule;
-            } else if (is_array($rule)) {
+            } elseif (is_array($rule)) {
                 $rulesStrs = [];
                 foreach ($rule as $ruleItem) {
                     $rulesStrs[] = is_object($ruleItem) ? get_class($ruleItem) : $ruleItem;
                 }
-                $rules[$attribute][] = implode("|", $rulesStrs);
+                $rules[$attribute][] = implode('|', $rulesStrs);
             } else {
                 $rules[$attribute][] = $rule;
             }

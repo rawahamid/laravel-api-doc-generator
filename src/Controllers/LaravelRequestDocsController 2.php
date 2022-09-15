@@ -1,23 +1,20 @@
 <?php
 
-namespace Targettech\LaravelRequestDocs\Controllers;
+namespace Rakutentech\LaravelRequestDocs\Controllers;
 
-use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Contracts\View\Factory;
-use Illuminate\Contracts\View\View;
 use Illuminate\Routing\Controller;
-use Targettech\LaravelRequestDocs\LaravelRequestDocs;
+use Rakutentech\LaravelRequestDocs\LaravelRequestDocs;
 
 class LaravelRequestDocsController extends Controller
 {
-    private LaravelRequestDocs $laravelRequestDocs;
+    private $laravelRequestDocs;
 
     public function __construct(LaravelRequestDocs $laravelRequestDocs)
     {
         $this->laravelRequestDocs = $laravelRequestDocs;
     }
 
-    public function index(): Factory|View|Application
+    public function index()
     {
         $docs = $this->laravelRequestDocs->getDocs();
         $docs = $this->laravelRequestDocs->sortDocs($docs, config('request-docs.sort_by', 'default'));

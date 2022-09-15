@@ -98,7 +98,7 @@
             </div>
         </nav>
       <div id="app" v-cloak class="w-full flex lg:pt-10">
-         <aside class="text-xl text-grey-darkest break-all bg-gray-200 pl-2 h-screen sticky top-1 overflow-auto" style="width: 25%">
+         <aside class="text-xl text-grey-darkest break-all bg-gray-200 pl-2 h-screen sticky top-1 overflow-auto" style="width: 20%">
             <h1 class="font-light mx-3">Routes List</h1>
              <div class="dropdown">
                  <input
@@ -111,17 +111,18 @@
                  />
                  <div class="dropdown-list">
                      @foreach ($docs as $index => $doc)
-                     <div  v-if="filter('{{ $doc["uri"] }}')"
+                     <div v-if="filter('{{ $doc["uri"] }}')"
                         v-show="showRoute"
                         @click="searched('{{ $doc["methods"][0] }}', '{{ $doc["uri"] }}') ; highlightSidebar('{{ $index }}')"
-                        class="dropdown-item">
-                         {{ str_replace('api/', '', $doc['uri']) }}
+                        class="dropdown-item"
+                     >
+                         {{$doc['methods'][0]}} - {{ str_replace('api/', '', $doc['uri']) }}
                      </div>
                      @endforeach
                  </div>
              </div>
             <hr class="border-b border-gray-300">
-            <table class="table-fixed text-sm mt-5">
+            <table class="table-fixed text-sm mt-5" style="width: 550px !important;">
                 <tbody>
                     @php
                         $previousController = ['controller' => null];
@@ -150,7 +151,7 @@
                                     text-{{in_array('PUT', $doc['methods']) ? 'black': ''}}-100 bg-{{in_array('PUT', $doc['methods']) ? 'yellow': ''}}-500
                                     text-{{in_array('PATCH', $doc['methods']) ? 'black': ''}}-100 bg-{{in_array('PATCH', $doc['methods']) ? 'yellow': ''}}-500
                                     text-{{in_array('DELETE', $doc['methods']) ? 'white': ''}} bg-{{in_array('DELETE', $doc['methods']) ? 'black': ''}}
-                                    ">
+                                    " style="width: 70px !important;">
                                     {{$doc['methods'][0]}}
                                 </span>
                                 <span class="text-xs" v-bind:class="docs[{{$index}}]['isActiveSidebar'] ? 'font-bold':''">

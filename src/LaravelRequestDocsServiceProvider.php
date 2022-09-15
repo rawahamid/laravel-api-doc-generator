@@ -1,29 +1,24 @@
 <?php
 
-namespace Rakutentech\LaravelRequestDocs;
+namespace Targettech\LaravelRequestDocs;
 
+use Illuminate\Support\Facades\Route;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use Rakutentech\LaravelRequestDocs\Commands\LaravelRequestDocsCommand;
-use Route;
+use Targettech\LaravelRequestDocs\Commands\LaravelRequestDocsCommand;
+use Targettech\LaravelRequestDocs\Controllers\LaravelRequestDocsController;
 
 class LaravelRequestDocsServiceProvider extends PackageServiceProvider
 {
     public function configurePackage(Package $package): void
     {
-        /*
-         * This class is a Package Service Provider
-         *
-         * More info: https://github.com/spatie/laravel-package-tools
-         */
         $package
             ->name('laravel-request-docs')
             ->hasConfigFile('request-docs')
             ->hasViews()
-            //->hasAssets()
             ->hasCommand(LaravelRequestDocsCommand::class);
 
-        Route::get(config('request-docs.url'), [\Rakutentech\LaravelRequestDocs\Controllers\LaravelRequestDocsController::class, 'index'])
+        Route::get(config('request-docs.url'), [LaravelRequestDocsController::class, 'index'])
             ->name('request-docs.index')
             ->middleware(config('request-docs.middlewares'));
     }

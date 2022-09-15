@@ -1,10 +1,10 @@
 <?php
 
-namespace Targettech\LaravelRequestDocs\Commands;
+namespace Rakutentech\LaravelRequestDocs\Commands;
 
+use File;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\File;
-use Targettech\LaravelRequestDocs\LaravelRequestDocs;
+use Rakutentech\LaravelRequestDocs\LaravelRequestDocs;
 
 class LaravelRequestDocsCommand extends Command
 {
@@ -12,7 +12,7 @@ class LaravelRequestDocsCommand extends Command
 
     public $description = 'Generate request docs to HTML';
 
-    private LaravelRequestDocs $laravelRequestDocs;
+    private $laravelRequestDocs;
 
     public function __construct(LaravelRequestDocs $laravelRequestDocs)
     {

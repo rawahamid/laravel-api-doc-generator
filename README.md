@@ -14,7 +14,7 @@ Automatically generate api documentation for Laravel without writing annotations
 You can install the package via composer:
 
 ```bash
-composer require rakutentech/laravel-request-docs --dev
+composer require targettech/laravel-request-docs --dev
 ```
 
 

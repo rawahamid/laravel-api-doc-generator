@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'document_name'  => 'LRD',
+    'document_name' => 'LARAVEL DOC GENERATOR',
 
     /*
     * Route where request docs will be served from
@@ -13,7 +13,7 @@ return [
         // \App\Http\Middleware\NotFoundWhenProduction::class,
     ],
     /**
-     * Path to to static HTML if using command line.
+     * Path to static HTML if using command line.
      */
     'docs_path' => base_path('docs/request-docs/'),
 
@@ -23,6 +23,6 @@ return [
     'sort_by' => 'default',
 
     'matching_paths' => [
-        "#^api#",
-    ]
+        '#^api#',
+    ],
 ];
